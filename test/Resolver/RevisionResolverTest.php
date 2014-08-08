@@ -17,12 +17,12 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->provider = $this
-            ->getMockBuilder("Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider")
+            ->getMockBuilder('Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->em = $this
-            ->getMockBuilder("Doctrine\ORM\EntityManagerInterface")
+            ->getMockBuilder('Doctrine\ORM\EntityManagerInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -38,8 +38,8 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
 
         $this->provider
             ->expects($this->once())
-            ->method("getAnnotationFromEntity")
-            ->with($this->em, $entity, "Hostnet\Component\EntityRevision\Revision");
+            ->method('getAnnotationFromEntity')
+            ->with($this->em, $entity, 'Hostnet\Component\EntityRevision\Revision');
 
         $this->resolver->getRevisionAnnotation($this->em, $entity);
     }
@@ -47,43 +47,19 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::getRevisionableFields
      */
-    public function testGetRevisionableFieldsNoAnnotation()
-    {
-        $entity = new \stdClass();
-
-        $this->provider
-            ->expects($this->once())
-            ->method("getAnnotationFromEntity")
-            ->willReturn(null);
-
-        $this->assertEmpty($this->resolver->getRevisionableFields($this->em, $entity));
-    }
-
-    /**
-     * @covers ::getRevisionableFields
-     */
     public function testGetRevisionableFields()
     {
-        $entity        = new \stdClass();
-        $metadata      = $this->getMock("\Doctrine\Common\Persistence\Mapping\ClassMetadata");
-        $metadata_meta = $this->getMock("\Doctrine\Common\Persistence\Mapping\ClassMetadata");
-
-        $this->provider
-            ->expects($this->once())
-            ->method("getAnnotationFromEntity")
-            ->willReturnOnConsecutiveCalls(new Revision());
-
-        $metadata->expects($this->once())->method("getFieldNames")->willReturn(["id"]);
-        $metadata->expects($this->once())->method("getAssociationNames")->willReturn(["test"]);
-        $metadata_meta->expects($this->once())->method("getFieldNames")->willReturn(["id"]);
-        $metadata_meta->expects($this->once())->method("getAssociationNames")->willReturn(["test"]);
+        $entity   = new \stdClass();
+        $metadata = $this->getMock('Doctrine\Common\Persistence\Mapping\ClassMetadata');
+        $metadata->expects($this->once())->method('getFieldNames')->willReturn(['id']);
+        $metadata->expects($this->once())->method('getAssociationNames')->willReturn(['test']);
 
         $this->em
-            ->expects($this->exactly(2))
-            ->method("getClassMetadata")
-            ->withConsecutive([get_class($entity)], [get_class($entity) . "Mutation"])
-            ->willReturnOnConsecutiveCalls($metadata, $metadata_meta);
+            ->expects($this->once())
+            ->method('getClassMetadata')
+            ->with(get_class($entity))
+            ->willReturn($metadata);
 
-        $this->assertEquals(["id", "test"], $this->resolver->getRevisionableFields($this->em, $entity));
+        $this->assertEquals(['id', 'test'], $this->resolver->getRevisionableFields($this->em, $entity));
     }
 }

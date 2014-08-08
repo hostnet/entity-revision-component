@@ -41,23 +41,7 @@ class RevisionResolver implements RevisionResolverInterface
      */
     public function getRevisionableFields(EntityManagerInterface $em, $entity)
     {
-        if (null === ($annotation = $this->getRevisionAnnotation($em, $entity))) {
-            return [];
-        }
-
-        $mutation_class = !empty($annotation->class) ? $annotation->class : get_class($entity) . 'Mutation';
-        $metadata       = $em->getClassMetadata(get_class($entity));
-        $mutation_meta  = $em->getClassMetadata($mutation_class);
-
-        return array_merge(
-            array_values(array_intersect(
-                $metadata->getFieldNames(),
-                $mutation_meta->getFieldNames()
-            )),
-            array_values(array_intersect(
-                $metadata->getAssociationNames(),
-                $mutation_meta->getAssociationNames()
-            ))
-        );
+        $metadata = $em->getClassMetadata(get_class($entity));
+        return array_merge($metadata->getFieldNames(), $metadata->getAssociationNames());
     }
 }
