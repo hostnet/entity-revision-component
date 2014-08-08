@@ -54,7 +54,7 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
     {
         $this->resolver
             ->expects($this->never())
-            ->method('getRevisionFields');
+            ->method('getRevisionableFields');
 
         $event    = new EntityChangedEvent($this->em, new \stdClass(), $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory);

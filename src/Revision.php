@@ -11,10 +11,5 @@ use Hostnet\Component\EntityTracker\Annotation\Tracked;
  */
 class Revision extends Tracked
 {
-    /**
-     * Mutated class used to determine the changes of
-     *
-     * @var string
-     */
-    public $class = '';
+
 }

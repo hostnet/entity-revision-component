@@ -79,7 +79,7 @@ class RevisionListener
         }
 
         if ($this->revision === null) {
-            throw new \RuntimeException("No Revision set for current flush.");
+            throw new \RuntimeException('No Revision set for current flush.');
         }
 
         $em->persist($this->revision);
