@@ -1,0 +1,34 @@
+{
+    "name": "hostnet/entity-revision-component",
+    "description": "Listens to an event so revisions can be made",
+    "license": "EPL-1.0",
+    "require": {
+        "php"                              : "5.*, >=5.4",
+        "doctrine/orm"                     : "2.*",
+        "hostnet/entity-tracker-component" : "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit" : "4.*"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+           "Hostnet\\Component\\EntityRevision\\" : "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+           "Hostnet\\Component\\EntityRevision\\" : "test/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Iltar van der Berg",
+            "email": "ivanderberg@hostnet.nl"
+        },
+        {
+            "name": "Yannick de Lange",
+            "email": "ydelange@hostnet.nl"
+        }
+    ]
+}
