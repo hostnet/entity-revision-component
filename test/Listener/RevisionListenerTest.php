@@ -5,8 +5,7 @@ use Hostnet\Component\EntityRevision\Revision;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 
 /**
- * @covers ::__construct
- * @coversDefaultClass Hostnet\Component\EntityRevision\Listener\RevisionListener
+ * @covers Hostnet\Component\EntityRevision\Listener\RevisionListener
  */
 class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 {
@@ -16,9 +15,6 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
     private $revision;
     private $resolver;
 
-    /**
-     * @see PHPUnit_Framework_TestCase::setUp()
-     */
     public function setUp()
     {
         $revision_loc   = 'Hostnet\Component\EntityRevision';
@@ -29,9 +25,6 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
         $this->revision = $this->getMock($revision_loc . '\RevisionInterface');
     }
 
-    /**
-     * @covers ::preFlush
-     */
     public function testPreFlush()
     {
         $this->factory
@@ -47,9 +40,6 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
         $listener->preFlush($doctrine_event);
     }
 
-    /**
-     * @covers ::onEntityChanged
-     */
     public function testOnEntityChangedNoInterface()
     {
         $this->resolver
@@ -58,22 +48,16 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, new \stdClass(), $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 
-    /**
-     * @covers ::onEntityChanged
-     */
     public function testOnEntityChangedNoAnnotation()
     {
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 
-    /**
-     * @covers ::onEntityChanged
-     */
     public function testOnEntityChangedNoRevisionFields()
     {
         $this->resolver
@@ -92,12 +76,9 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 
-    /**
-     * @covers ::onEntityChanged
-     */
     public function testOnEntityChangedNoTrackedMutations()
     {
         $this->resolver
@@ -116,15 +97,14 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['created_at']);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 
     /**
-     * @covers ::onEntityChanged
      * @expectedException \RuntimeException
      */
     public function testOnEntityChangedNoRevision()
@@ -147,12 +127,9 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
         $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 
-    /**
-     * @covers ::onEntityChanged
-     */
     public function testOnEntityChangedFullPath()
     {
         $history = new Revision();
@@ -189,6 +166,6 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $listener = new RevisionListener($this->resolver, $this->factory);
         $listener->preFlush($doctrine_event);
-        $listener->onEntityChanged($event);
+        $listener->entityChanged($event);
     }
 }

@@ -4,8 +4,7 @@ namespace Hostnet\Component\EntityRevision\Resolver;
 use Hostnet\Component\EntityRevision\Revision;
 
 /**
- * @coversDefaultClass Hostnet\Component\EntityRevision\Resolver\RevisionResolver
- * @covers ::__construct
+ * @covers Hostnet\Component\EntityRevision\Resolver\RevisionResolver
  * @author Yannick de Lange <ydelange@hostnet.nl>
  */
 class RevisionResolverTest extends \PHPUnit_Framework_TestCase
@@ -29,9 +28,6 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
         $this->resolver = new RevisionResolver($this->provider);
     }
 
-    /**
-     * @covers ::getRevisionAnnotation
-     */
     public function testGetRevisionAnnotation()
     {
         $entity = new \stdClass();
@@ -44,9 +40,6 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
         $this->resolver->getRevisionAnnotation($this->em, $entity);
     }
 
-    /**
-     * @covers ::getRevisionableFields
-     */
     public function testGetRevisionableFields()
     {
         $entity   = new \stdClass();
