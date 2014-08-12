@@ -54,7 +54,7 @@ class RevisionListener
     /**
      * @param EntityChangedEvent $event
      */
-    public function onEntityChanged(EntityChangedEvent $event)
+    public function entityChanged(EntityChangedEvent $event)
     {
         if (!($entity = $event->getCurrentEntity()) instanceof RevisionableInterface) {
             return;
