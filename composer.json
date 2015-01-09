@@ -5,7 +5,8 @@
     "require": {
         "php"                              : "5.*, >=5.4",
         "doctrine/orm"                     : "2.*",
-        "hostnet/entity-tracker-component" : "1.*"
+        "hostnet/entity-tracker-component" : "1.*",
+        "psr/log"                          : "1.*"
     },
     "require-dev": {
         "phpunit/phpunit" : "4.*"
@@ -20,6 +21,9 @@
         "psr-4": {
            "Hostnet\\Component\\EntityRevision\\" : "test/"
         }
+    },
+    "archive": {
+        "exclude": [ "/test" ]
     },
     "authors": [
         {

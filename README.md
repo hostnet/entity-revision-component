@@ -84,11 +84,13 @@ $annotation_reader = new AnnotationReader();
 // setup required providers
 $mutation_metadata_provider   = new EntityMutationMetadataProvider($annotation_reader);
 $annotation_metadata_provider = new EntityAnnotationMetadataProvider($annotation_reader);
+$logger = ...; // instance of LoggerInterface from the psr/log package, optional argument
  
 // pre flush event listener that uses the @Revision annotation
 $entity_changed_listener = new EntityChangedListener(
     $mutation_metadata_provider,
-    $annotation_metadata_provider
+    $annotation_metadata_provider,
+    $logger
 );
 
 // the resolver is used to find the correct annotation
@@ -100,9 +102,8 @@ $revision_factory = new AcmeRevisionFactory('Henk');
 // creating the revision listener
 $revision_listener = new RevisionListener($revision_resolver, $revision_factory);
 
-// register the events, make sure to register the RevisionListener::onFlush first!
-$event_manager->addEventListener('preFlush', $revision_listener);
 $event_manager->addEventListener('preFlush', $entity_changed_listener);
+$event_manager->addEventListener('postFlush', $revision_listener);
 $event_manager->addEventListener('entityChanged', $revision_listener);
 
 ```
