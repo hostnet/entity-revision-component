@@ -3,7 +3,7 @@
     "description": "Listens to an event so revisions can be made",
     "license": "MIT",
     "require": {
-        "php"                              : "5.*, >=5.4",
+        "php"                              : "7.0.*|>=5.5",
         "doctrine/orm"                     : "2.*",
         "hostnet/entity-tracker-component" : "1.*",
         "psr/log"                          : "1.*"
