@@ -79,7 +79,6 @@ class RevisionListener
     public function postFlush(PostFlushEventArgs $event)
     {
         $this->revision = null;
-        $this->logger->info(sprintf('Revision state reset, next flush will contain a new revision'));
     }
 
     /**
