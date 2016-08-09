@@ -43,7 +43,7 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
     public function testGetRevisionableFields()
     {
         $entity   = new \stdClass();
-        $metadata = $this->getMock('Doctrine\Common\Persistence\Mapping\ClassMetadata');
+        $metadata = $this->createMock('Doctrine\Common\Persistence\Mapping\ClassMetadata');
         $metadata->expects($this->once())->method('getFieldNames')->willReturn(['id']);
         $metadata->expects($this->once())->method('getAssociationNames')->willReturn(['test']);
 
