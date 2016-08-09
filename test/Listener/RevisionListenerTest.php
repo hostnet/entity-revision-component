@@ -18,12 +18,12 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $revision_loc   = 'Hostnet\Component\EntityRevision';
-        $this->em       = $this->getMock('Doctrine\ORM\EntityManagerInterface');
-        $this->factory  = $this->getMock($revision_loc . '\Factory\RevisionFactoryInterface');
-        $this->resolver = $this->getMock($revision_loc . '\Resolver\RevisionResolverInterface');
-        $this->entity   = $this->getMock($revision_loc . '\RevisionableInterface');
-        $this->revision = $this->getMock($revision_loc . '\RevisionInterface');
-        $this->logger   = $this->getMock('Psr\Log\LoggerInterface');
+        $this->em       = $this->createMock('Doctrine\ORM\EntityManagerInterface');
+        $this->factory  = $this->createMock($revision_loc . '\Factory\RevisionFactoryInterface');
+        $this->resolver = $this->createMock($revision_loc . '\Resolver\RevisionResolverInterface');
+        $this->entity   = $this->createMock($revision_loc . '\RevisionableInterface');
+        $this->revision = $this->createMock($revision_loc . '\RevisionInterface');
+        $this->logger   = $this->createMock('Psr\Log\LoggerInterface');
     }
 
     public function testPreFlush()
@@ -73,7 +73,7 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $this->factory
             ->expects($this->never())
-            ->method('never');
+            ->method('createRevision');
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
@@ -134,8 +134,8 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
     public function testOnEntityChanged()
     {
-        $r1 = $this->getMock('Hostnet\Component\EntityRevision\RevisionInterface');
-        $r2 = $this->getMock('Hostnet\Component\EntityRevision\RevisionInterface');
+        $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
+        $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
 
         $history = new Revision();
         $this->resolver

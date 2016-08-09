@@ -1,37 +1,39 @@
 {
-    "name": "hostnet/entity-revision-component",
-    "description": "Listens to an event so revisions can be made",
-    "license": "MIT",
+    "name":              "hostnet/entity-revision-component",
+    "description":       "Listens to an event so revisions can be made",
+    "license":           "MIT",
     "require": {
-        "php"                              : "7.0.*|>=5.5",
-        "doctrine/orm"                     : "2.*",
-        "hostnet/entity-tracker-component" : "1.*",
-        "psr/log"                          : "1.*"
+        "php":                              "5.*,>=5.6||7.*",
+        "doctrine/orm":                     "^2.4.0",
+        "hostnet/entity-tracker-component": "^1.2.0||^2.0.0",
+        "psr/log":                          "^1.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit" : "4.*"
+        "phpunit/phpunit": "^5.5.0"
     },
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-           "Hostnet\\Component\\EntityRevision\\" : "src/"
+            "Hostnet\\Component\\EntityRevision\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-           "Hostnet\\Component\\EntityRevision\\" : "test/"
+            "Hostnet\\Component\\EntityRevision\\": "test/"
         }
     },
     "archive": {
-        "exclude": [ "/test" ]
+        "exclude": [
+            "/test"
+        ]
     },
     "authors": [
         {
-            "name": "Iltar van der Berg",
+            "name":  "Iltar van der Berg",
             "email": "ivanderberg@hostnet.nl"
         },
         {
-            "name": "Yannick de Lange",
+            "name":  "Yannick de Lange",
             "email": "ydelange@hostnet.nl"
         }
     ]
