@@ -14,3 +14,5 @@ matrix:
 install:
     - if [ -z "$deps" ]; then composer install; fi;
     - if [ "$deps" = "lowest" ]; then composer update --prefer-lowest -n; fi;
+    
+script: vendor/bin/phpunit
