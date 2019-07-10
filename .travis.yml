@@ -7,9 +7,6 @@ matrix:
         - php: 7.0
           env: deps=lowest
         - php: 7.1
-        - php: hhvm
-    allow_failures:
-        - php: hhvm
 
 install:
     - if [ -z "$deps" ]; then composer install; fi;
