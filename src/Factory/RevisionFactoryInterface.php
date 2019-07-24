@@ -10,7 +10,7 @@ interface RevisionFactoryInterface
      * Create a revision
      *
      * @param \DateTime $created_at
-     * @return Hostnet\Component\EntityRevision\RevisionInterface
+     * @return \Hostnet\Component\EntityRevision\RevisionInterface
      */
     public function createRevision(\DateTime $created_at);
 }
