@@ -4,7 +4,7 @@
     "license":           "MIT",
     "minimum-stability": "stable",
     "require": {
-        "php":                              "^7.3",
+        "php":                              "^7.3|^8.0",
         "doctrine/orm":                     "^2.4.0",
         "hostnet/entity-tracker-component": "^1.2.0||^2.0.0",
         "psr/log":                          "^1.0.0"
