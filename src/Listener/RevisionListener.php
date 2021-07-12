@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -10,10 +15,6 @@ use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-/**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @author Yannick de Lange <ydelange@hostnet.nl>
- */
 class RevisionListener
 {
     /**
@@ -43,8 +44,8 @@ class RevisionListener
      */
     public function __construct(
         RevisionResolverInterface $resolver,
-        RevisionFactoryInterface  $factory,
-        LoggerInterface           $logger = null
+        RevisionFactoryInterface $factory,
+        LoggerInterface $logger = null
     ) {
         $this->resolver = $resolver;
         $this->factory  = $factory;
@@ -99,7 +100,6 @@ class RevisionListener
         }
 
         $event->getEntityManager()->persist($this->revision);
-
 
         $entity = $event->getCurrentEntity();
         $entity->setRevision($this->revision);

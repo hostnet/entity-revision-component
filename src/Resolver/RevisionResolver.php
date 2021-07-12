@@ -1,13 +1,14 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityRevision\Resolver;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 
-/**
- * @author Iltar van der Berg <ivanderberg@hostnet.nl>
- * @author Yannick de Lange <ydelange@hostnet.nl>
- */
 class RevisionResolver implements RevisionResolverInterface
 {
     /**

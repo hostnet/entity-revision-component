@@ -1,9 +1,11 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityRevision\Factory;
 
-/**
- * @author Yannick de Lange <ydelange@hostnet.nl>
- */
 interface RevisionFactoryInterface
 {
     /**
