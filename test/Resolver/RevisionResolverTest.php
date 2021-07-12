@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityRevision\Resolver;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -8,8 +13,7 @@ use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers Hostnet\Component\EntityRevision\Resolver\RevisionResolver
- * @author Yannick de Lange <ydelange@hostnet.nl>
+ * @covers \Hostnet\Component\EntityRevision\Resolver\RevisionResolver
  */
 class RevisionResolverTest extends TestCase
 {

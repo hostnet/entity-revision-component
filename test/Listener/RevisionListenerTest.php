@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright 2014-present Hostnet B.V.
+ */
+declare(strict_types=1);
+
 namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 /**
- * @covers Hostnet\Component\EntityRevision\Listener\RevisionListener
+ * @covers \Hostnet\Component\EntityRevision\Listener\RevisionListener
  */
 class RevisionListenerTest extends TestCase
 {
