@@ -1,27 +1,31 @@
 <?php
 namespace Hostnet\Component\EntityRevision\Resolver;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers Hostnet\Component\EntityRevision\Resolver\RevisionResolver
  * @author Yannick de Lange <ydelange@hostnet.nl>
  */
-class RevisionResolverTest extends \PHPUnit_Framework_TestCase
+class RevisionResolverTest extends TestCase
 {
     private $provider;
     private $resolver;
     private $em;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->provider = $this
-            ->getMockBuilder('Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider')
+            ->getMockBuilder(EntityAnnotationMetadataProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->em = $this
-            ->getMockBuilder('Doctrine\ORM\EntityManagerInterface')
+            ->getMockBuilder(EntityManagerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -35,7 +39,7 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
         $this->provider
             ->expects($this->once())
             ->method('getAnnotationFromEntity')
-            ->with($this->em, $entity, 'Hostnet\Component\EntityRevision\Revision');
+            ->with($this->em, $entity, Revision::class);
 
         $this->resolver->getRevisionAnnotation($this->em, $entity);
     }
@@ -43,7 +47,7 @@ class RevisionResolverTest extends \PHPUnit_Framework_TestCase
     public function testGetRevisionableFields()
     {
         $entity   = new \stdClass();
-        $metadata = $this->createMock('Doctrine\Common\Persistence\Mapping\ClassMetadata');
+        $metadata = $this->createMock(ClassMetadata::class);
         $metadata->expects($this->once())->method('getFieldNames')->willReturn(['id']);
         $metadata->expects($this->once())->method('getAssociationNames')->willReturn(['test']);
 

@@ -22,7 +22,7 @@ This component lets you automatically store revisions for a set of entities per 
 
 Requirements
 ------------
-The revision component requires a minimum of php 5.4 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json).
+The revision component requires a minimum of php 7.3 and runs on Doctrine2. For specific requirements, please check [composer.json](../master/composer.json).
 
 Installation
 ------------
