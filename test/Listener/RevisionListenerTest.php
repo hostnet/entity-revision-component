@@ -1,9 +1,16 @@
 <?php
 namespace Hostnet\Component\EntityRevision\Listener;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\PreFlushEventArgs;
+use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
+use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
 use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityRevision\RevisionableInterface;
+use Hostnet\Component\EntityRevision\RevisionInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * @covers Hostnet\Component\EntityRevision\Listener\RevisionListener
@@ -18,13 +25,12 @@ class RevisionListenerTest extends TestCase
 
     public function setUp(): void
     {
-        $revision_loc   = 'Hostnet\Component\EntityRevision';
-        $this->em       = $this->createMock('Doctrine\ORM\EntityManagerInterface');
-        $this->factory  = $this->createMock($revision_loc . '\Factory\RevisionFactoryInterface');
-        $this->resolver = $this->createMock($revision_loc . '\Resolver\RevisionResolverInterface');
-        $this->entity   = $this->createMock($revision_loc . '\RevisionableInterface');
-        $this->revision = $this->createMock($revision_loc . '\RevisionInterface');
-        $this->logger   = $this->createMock('Psr\Log\LoggerInterface');
+        $this->em       = $this->createMock(EntityManagerInterface::class);
+        $this->factory  = $this->createMock(RevisionFactoryInterface::class);
+        $this->resolver = $this->createMock(RevisionResolverInterface::class);
+        $this->entity   = $this->createMock(RevisionableInterface::class);
+        $this->revision = $this->createMock(RevisionInterface::class);
+        $this->logger   = $this->createMock(LoggerInterface::class);
     }
 
     public function testPreFlush()
@@ -34,7 +40,7 @@ class RevisionListenerTest extends TestCase
             ->method('createRevision');
 
         $doctrine_event = $this
-            ->getMockBuilder('Doctrine\ORM\Event\PreFlushEventArgs')
+            ->getMockBuilder(PreFlushEventArgs::class)
             ->disableOriginalConstructor()
             ->getMock();
 
