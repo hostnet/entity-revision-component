@@ -3,11 +3,12 @@ namespace Hostnet\Component\EntityRevision\Listener;
 
 use Hostnet\Component\EntityRevision\Revision;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers Hostnet\Component\EntityRevision\Listener\RevisionListener
  */
-class RevisionListenerTest extends \PHPUnit_Framework_TestCase
+class RevisionListenerTest extends TestCase
 {
     private $em;
     private $factory;
@@ -15,7 +16,7 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
     private $revision;
     private $resolver;
 
-    public function setUp()
+    public function setUp(): void
     {
         $revision_loc   = 'Hostnet\Component\EntityRevision';
         $this->em       = $this->createMock('Doctrine\ORM\EntityManagerInterface');
@@ -49,6 +50,7 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, new \stdClass(), $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
+
         $listener->entityChanged($event);
     }
 
@@ -56,6 +58,9 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
     {
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
+
+        $this->expectNotToPerformAssertions();
+
         $listener->entityChanged($event);
     }
 
@@ -105,9 +110,6 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
         $listener->entityChanged($event);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testOnEntityChangedNoRevision()
     {
         $history = new Revision();
@@ -129,6 +131,9 @@ class RevisionListenerTest extends \PHPUnit_Framework_TestCase
 
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
+
+        $this->expectException(\RuntimeException::class);
+
         $listener->entityChanged($event);
     }
 
