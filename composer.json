@@ -23,6 +23,12 @@
             "Hostnet\\Component\\EntityRevision\\": "test/"
         }
     },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": false,
+            "hostnet/*":                                      true
+        }
+    },
     "archive": {
         "exclude": [
             "/test"
