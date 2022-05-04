@@ -38,7 +38,7 @@ class RevisionListenerTest extends TestCase
         $this->logger   = $this->createMock(LoggerInterface::class);
     }
 
-    public function testPreFlush()
+    public function testPreFlush(): void
     {
         $this->factory
             ->expects($this->once())
@@ -53,7 +53,7 @@ class RevisionListenerTest extends TestCase
         $listener->preFlush($doctrine_event);
     }
 
-    public function testOnEntityChangedNoInterface()
+    public function testOnEntityChangedNoInterface(): void
     {
         $this->resolver
             ->expects($this->never())
@@ -65,7 +65,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoAnnotation()
+    public function testOnEntityChangedNoAnnotation(): void
     {
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
@@ -75,7 +75,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoRevisionFields()
+    public function testOnEntityChangedNoRevisionFields(): void
     {
         $this->resolver
             ->expects($this->once())
@@ -96,7 +96,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoTrackedMutations()
+    public function testOnEntityChangedNoTrackedMutations(): void
     {
         $this->resolver
             ->expects($this->exactly(2))
@@ -121,7 +121,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoRevision()
+    public function testOnEntityChangedNoRevision(): void
     {
         $history = new Revision();
 
@@ -148,7 +148,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChanged()
+    public function testOnEntityChanged(): void
     {
         $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
         $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
