@@ -36,7 +36,7 @@ class RevisionResolverTest extends TestCase
         $this->resolver = new RevisionResolver($this->provider);
     }
 
-    public function testGetRevisionAnnotation()
+    public function testGetRevisionAnnotation(): void
     {
         $entity = new \stdClass();
 
@@ -48,7 +48,7 @@ class RevisionResolverTest extends TestCase
         $this->resolver->getRevisionAnnotation($this->em, $entity);
     }
 
-    public function testGetRevisionableFields()
+    public function testGetRevisionableFields(): void
     {
         $entity   = new \stdClass();
         $metadata = $this->createMock(ClassMetadata::class);
