@@ -8,9 +8,11 @@ namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
+use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
+use Hostnet\Component\EntityRevision\RevisionInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -33,9 +35,14 @@ class RevisionListener
     private $logger;
 
     /**
-     * @var Revision
+     * @var RevisionInterface
      */
     private $revision;
+
+    /**
+     * Caches the class names to prevent iterating over attribute and annotations again on the next entity.
+     */
+    private array $is_revision_cache = [];
 
     /**
      * @param RevisionResolverInterface $resolver
@@ -61,7 +68,7 @@ class RevisionListener
      * @deprecated functionality was moved to entityChanged and postFlush
      * @param PreFlushEventArgs $event
      */
-    public function preFlush(PreFlushEventArgs $event)
+    public function preFlush(PreFlushEventArgs $event): void
     {
         trigger_error(__METHOD__ . ' is deprecated, please remove it from your event listener.', E_USER_DEPRECATED);
         $this->revision = $this->factory->createRevision(new \DateTime());
@@ -74,10 +81,8 @@ class RevisionListener
      * in the same flush if they use @Revision. This method
      * can safely be overwritten if you prefer a Revision
      * per Request.
-     *
-     * @param PreFlushEventArgs $event
      */
-    public function postFlush(PostFlushEventArgs $event)
+    public function postFlush(PostFlushEventArgs $event): void
     {
         $this->revision = null;
     }
@@ -85,7 +90,7 @@ class RevisionListener
     /**
      * @param EntityChangedEvent $event
      */
-    public function entityChanged(EntityChangedEvent $event)
+    public function entityChanged(EntityChangedEvent $event): void
     {
         if (!$this->shouldBePersisted($event)) {
             return;
@@ -112,15 +117,12 @@ class RevisionListener
      *
      * @param EntityChangedEvent $event
      */
-    private function shouldBePersisted(EntityChangedEvent $event)
+    private function shouldBePersisted(EntityChangedEvent $event): bool
     {
-        if (!($entity = $event->getCurrentEntity()) instanceof RevisionableInterface) {
-            return false;
-        }
+        $entity = $event->getCurrentEntity();
+        $em     = $event->getEntityManager();
 
-        $em = $event->getEntityManager();
-
-        if (null === $this->resolver->getRevisionAnnotation($em, $entity)) {
+        if (!$this->isRevision($em, $entity)) {
             return false;
         }
 
@@ -132,5 +134,43 @@ class RevisionListener
         }
 
         return true;
+    }
+
+    private function isRevision($em, $entity): bool
+    {
+        $class = get_class($entity);
+        if (array_key_exists($class, $this->is_revision_cache)) {
+            return $this->is_revision_cache[$class];
+        }
+
+        if (!($entity instanceof RevisionableInterface)) {
+            $this->is_revision_cache[$class] = false;
+
+            return false;
+        }
+
+        if (null !== $this->resolver->getRevisionAnnotation($em, $entity)) {
+            $this->is_revision_cache[$class] = true;
+
+            return true;
+        }
+
+        if ($this->hasRevisionAttribute($entity)) {
+            $this->is_revision_cache[$class] = true;
+
+            return true;
+        }
+
+        $this->is_revision_cache[$class] = false;
+
+        return false;
+    }
+
+    private function hasRevisionAttribute($entity): bool
+    {
+        $reflection = new \ReflectionClass($entity);
+        $attributes = $reflection->getAttributes(Revision::class);
+
+        return !empty($attributes);
     }
 }
