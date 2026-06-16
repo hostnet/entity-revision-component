@@ -7,7 +7,8 @@ declare(strict_types=1);
 namespace Hostnet\Component\EntityRevision\Resolver;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityRevision\Attributes\Revision;
+use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
 
 interface RevisionResolverInterface
 {
@@ -23,5 +24,10 @@ interface RevisionResolverInterface
      *
      * @deprecated
      */
-    public function getRevisionAnnotation(EntityManagerInterface $em, $entity): ?Revision;
+    public function getRevisionAnnotation(EntityManagerInterface $em, $entity): ?RevisionAnnotation;
+
+    /**
+     * Return the revision attribute or null
+     */
+    public function getRevisionAttribute(EntityManagerInterface $em, $entity): ?Revision;
 }

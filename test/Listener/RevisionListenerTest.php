@@ -8,9 +8,10 @@ namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
+use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
-use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use PHPUnit\Framework\TestCase;
@@ -78,7 +79,7 @@ class RevisionListenerTest extends TestCase
         $this->resolver
             ->expects($this->once())
             ->method('getRevisionAnnotation')
-            ->willReturn(new Revision());
+            ->willReturn(new RevisionAnnotation());
 
         $this->resolver
             ->expects($this->once())
@@ -99,7 +100,7 @@ class RevisionListenerTest extends TestCase
         $this->resolver
             ->expects($this->exactly(2))
             ->method('getRevisionAnnotation')
-            ->willReturn(new Revision());
+            ->willReturn(new RevisionAnnotation());
 
         $this->resolver
             ->expects($this->exactly(2))
@@ -121,7 +122,7 @@ class RevisionListenerTest extends TestCase
 
     public function testOnEntityChangedNoRevisionPresentOnFlush(): void
     {
-        $history = new Revision();
+        $history = new RevisionAnnotation();
 
         $this->resolver
             ->expects($this->once())
@@ -151,7 +152,7 @@ class RevisionListenerTest extends TestCase
         $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
         $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
 
-        $history = new Revision();
+        $history = new RevisionAnnotation();
         $this->resolver
             ->expects($this->any())
             ->method('getRevisionAnnotation')
@@ -233,6 +234,11 @@ class RevisionListenerTest extends TestCase
             ->expects($this->any())
             ->method('getRevisionAnnotation')
             ->willReturn(null);
+
+        $this->resolver
+            ->expects($this->once())
+            ->method('getRevisionAttribute')
+            ->willReturn(new Revision());
 
         $this->resolver
             ->expects($this->any())

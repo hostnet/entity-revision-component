@@ -8,55 +8,28 @@ namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
 use Hostnet\Component\EntityRevision\RevisionInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 class RevisionListener
 {
-    /**
-     * @var RevisionResolverInterface
-     */
-    private $resolver;
+    private ?RevisionInterface $revision = null;
 
-    /**
-     * @var RevisionFactoryInterface
-     */
-    private $factory;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var RevisionInterface
-     */
-    private $revision;
-
-    /**
-     * Caches the class names to prevent iterating over attribute and annotations again on the next entity.
-     */
-    private array $is_revision_cache = [];
-
-    /**
-     * @param RevisionResolverInterface $resolver
-     * @param RevisionFactoryInterface  $factory
-     * @param LoggerInterface           $logger
-     */
     public function __construct(
-        RevisionResolverInterface $resolver,
-        RevisionFactoryInterface $factory,
-        LoggerInterface $logger = null
+        private RevisionResolverInterface $resolver,
+        private RevisionFactoryInterface $factory,
+        private ?LoggerInterface $logger = null,
+        private ?CacheItemPoolInterface $is_revision_cache = new ArrayAdapter()
     ) {
-        $this->resolver = $resolver;
-        $this->factory  = $factory;
-        $this->logger   = $logger ?: new NullLogger();
+        $this->logger = $logger ?: new NullLogger();
     }
 
     /**
@@ -65,7 +38,8 @@ class RevisionListener
      * Used to group all entities to the same revision
      * in the same flush if they use @Revision
      *
-     * @deprecated functionality was moved to entityChanged and postFlush
+     * @deprecated functionality was moved to entityChanged and postFlush, will be removed when removing
+     *             doctrine/annotations.
      * @param PreFlushEventArgs $event
      */
     public function preFlush(PreFlushEventArgs $event): void
@@ -138,39 +112,33 @@ class RevisionListener
 
     private function isRevision($em, $entity): bool
     {
-        $class = get_class($entity);
-        if (array_key_exists($class, $this->is_revision_cache)) {
-            return $this->is_revision_cache[$class];
+        $cache_key   = base64_encode('REVISION-' . get_class($entity));
+        $cached_item = $this->is_revision_cache->getItem($cache_key);
+
+        if ($cached_item->isHit()) {
+            return $cached_item->get();
         }
 
         if (!($entity instanceof RevisionableInterface)) {
-            $this->is_revision_cache[$class] = false;
+            return $this->save($cached_item, false);
+        }
 
-            return false;
+        if (null !== $this->resolver->getRevisionAttribute($em, $entity)) {
+            return $this->save($cached_item, true);
         }
 
         if (null !== $this->resolver->getRevisionAnnotation($em, $entity)) {
-            $this->is_revision_cache[$class] = true;
-
-            return true;
+            return $this->save($cached_item, true);
         }
 
-        if ($this->hasRevisionAttribute($entity)) {
-            $this->is_revision_cache[$class] = true;
-
-            return true;
-        }
-
-        $this->is_revision_cache[$class] = false;
-
-        return false;
+        return $this->save($cached_item, false);
     }
 
-    private function hasRevisionAttribute($entity): bool
+    private function save(CacheItemInterface $item, bool $value): bool
     {
-        $reflection = new \ReflectionClass($entity);
-        $attributes = $reflection->getAttributes(Revision::class);
+        $item->set($value);
+        $this->is_revision_cache->save($item);
 
-        return !empty($attributes);
+        return $value;
     }
 }
