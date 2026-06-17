@@ -26,10 +26,9 @@ class RevisionListener
     public function __construct(
         private RevisionResolverInterface $resolver,
         private RevisionFactoryInterface $factory,
-        private ?LoggerInterface $logger = null,
+        private ?LoggerInterface $logger = new NullLogger(),
         private ?CacheItemPoolInterface $is_revision_cache = new ArrayAdapter()
     ) {
-        $this->logger = $logger ?: new NullLogger();
     }
 
     /**
