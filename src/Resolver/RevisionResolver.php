@@ -9,18 +9,12 @@ namespace Hostnet\Component\EntityRevision\Resolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
-use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
+use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
 
 class RevisionResolver implements RevisionResolverInterface
 {
-    /**
-     * @var EntityAnnotationMetadataProvider
-     */
-    private $provider;
-
-    public function __construct(EntityAnnotationMetadataProvider $provider)
+    public function __construct(private EntityMetadataProvider $provider)
     {
-        $this->provider = $provider;
     }
 
     /**

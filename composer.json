@@ -6,7 +6,7 @@
     "require": {
         "php":                              "^8.3",
         "doctrine/orm":                     "^2.4.0",
-        "hostnet/entity-tracker-component": "^1.2.0||^2.0.0",
+        "hostnet/entity-tracker-component": "^2.3.0",
         "psr/log":                          "^1.0.0|^2.0.0|^3.0.0",
         "symfony/cache":                    "^6.4|^7.4"
     },
