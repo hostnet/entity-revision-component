@@ -11,45 +11,24 @@ use Doctrine\ORM\Event\PreFlushEventArgs;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
+use Hostnet\Component\EntityRevision\RevisionInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 class RevisionListener
 {
-    /**
-     * @var RevisionResolverInterface
-     */
-    private $resolver;
+    private ?RevisionInterface $revision = null;
 
-    /**
-     * @var RevisionFactoryInterface
-     */
-    private $factory;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var Revision
-     */
-    private $revision;
-
-    /**
-     * @param RevisionResolverInterface $resolver
-     * @param RevisionFactoryInterface  $factory
-     * @param LoggerInterface           $logger
-     */
     public function __construct(
-        RevisionResolverInterface $resolver,
-        RevisionFactoryInterface $factory,
-        LoggerInterface $logger = null
+        private RevisionResolverInterface $resolver,
+        private RevisionFactoryInterface $factory,
+        private ?LoggerInterface $logger = new NullLogger(),
+        private ?CacheItemPoolInterface $is_revision_cache = new ArrayAdapter()
     ) {
-        $this->resolver = $resolver;
-        $this->factory  = $factory;
-        $this->logger   = $logger ?: new NullLogger();
     }
 
     /**
@@ -58,10 +37,11 @@ class RevisionListener
      * Used to group all entities to the same revision
      * in the same flush if they use @Revision
      *
-     * @deprecated functionality was moved to entityChanged and postFlush
+     * @deprecated functionality was moved to entityChanged and postFlush, will be removed when removing
+     *             doctrine/annotations.
      * @param PreFlushEventArgs $event
      */
-    public function preFlush(PreFlushEventArgs $event)
+    public function preFlush(PreFlushEventArgs $event): void
     {
         trigger_error(__METHOD__ . ' is deprecated, please remove it from your event listener.', E_USER_DEPRECATED);
         $this->revision = $this->factory->createRevision(new \DateTime());
@@ -74,10 +54,8 @@ class RevisionListener
      * in the same flush if they use @Revision. This method
      * can safely be overwritten if you prefer a Revision
      * per Request.
-     *
-     * @param PreFlushEventArgs $event
      */
-    public function postFlush(PostFlushEventArgs $event)
+    public function postFlush(PostFlushEventArgs $event): void
     {
         $this->revision = null;
     }
@@ -85,7 +63,7 @@ class RevisionListener
     /**
      * @param EntityChangedEvent $event
      */
-    public function entityChanged(EntityChangedEvent $event)
+    public function entityChanged(EntityChangedEvent $event): void
     {
         if (!$this->shouldBePersisted($event)) {
             return;
@@ -112,15 +90,12 @@ class RevisionListener
      *
      * @param EntityChangedEvent $event
      */
-    private function shouldBePersisted(EntityChangedEvent $event)
+    private function shouldBePersisted(EntityChangedEvent $event): bool
     {
-        if (!($entity = $event->getCurrentEntity()) instanceof RevisionableInterface) {
-            return false;
-        }
+        $entity = $event->getCurrentEntity();
+        $em     = $event->getEntityManager();
 
-        $em = $event->getEntityManager();
-
-        if (null === $this->resolver->getRevisionAnnotation($em, $entity)) {
+        if (!$this->isRevision($em, $entity)) {
             return false;
         }
 
@@ -132,5 +107,37 @@ class RevisionListener
         }
 
         return true;
+    }
+
+    private function isRevision($em, $entity): bool
+    {
+        $cache_key   = base64_encode('REVISION-' . get_class($entity));
+        $cached_item = $this->is_revision_cache->getItem($cache_key);
+
+        if ($cached_item->isHit()) {
+            return $cached_item->get();
+        }
+
+        if (!($entity instanceof RevisionableInterface)) {
+            return $this->save($cached_item, false);
+        }
+
+        if (null !== $this->resolver->getRevisionAttribute($em, $entity)) {
+            return $this->save($cached_item, true);
+        }
+
+        if (null !== $this->resolver->getRevisionAnnotation($em, $entity)) {
+            return $this->save($cached_item, true);
+        }
+
+        return $this->save($cached_item, false);
+    }
+
+    private function save(CacheItemInterface $item, bool $value): bool
+    {
+        $item->set($value);
+        $this->is_revision_cache->save($item);
+
+        return $value;
     }
 }

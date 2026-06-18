@@ -8,7 +8,8 @@ namespace Hostnet\Component\EntityRevision\Resolver;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityRevision\Attributes\Revision;
+use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
 use Hostnet\Component\EntityTracker\Provider\EntityAnnotationMetadataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -43,7 +44,7 @@ class RevisionResolverTest extends TestCase
         $this->provider
             ->expects($this->once())
             ->method('getAnnotationFromEntity')
-            ->with($this->em, $entity, Revision::class);
+            ->with($this->em, $entity, RevisionAnnotation::class);
 
         $this->resolver->getRevisionAnnotation($this->em, $entity);
     }
@@ -62,5 +63,20 @@ class RevisionResolverTest extends TestCase
             ->willReturn($metadata);
 
         $this->assertEquals(['id', 'test'], $this->resolver->getRevisionableFields($this->em, $entity));
+    }
+
+    public function testGetRevisionAttribute(): void
+    {
+        $entity = new \stdClass();
+
+        $attribute = new Revision();
+
+        $this->provider
+            ->expects($this->once())
+            ->method('getAttributeFromEntity')
+            ->with(Revision::class, $this->em, $entity)
+            ->willReturn($attribute);
+
+        self::assertSame($attribute, $this->resolver->getRevisionAttribute($this->em, $entity));
     }
 }

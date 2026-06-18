@@ -11,6 +11,8 @@ use Hostnet\Component\EntityTracker\Annotation\Tracked;
 /**
  * @Annotation
  * @Target({"CLASS"})
+ *
+ * @deprecated Please use the attribute instead
  */
 class Revision extends Tracked
 {

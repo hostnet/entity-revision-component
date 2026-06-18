@@ -8,11 +8,11 @@ namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PreFlushEventArgs;
+use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
-use Hostnet\Component\EntityRevision\Revision;
+use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
-use Hostnet\Component\EntityRevision\RevisionInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -25,8 +25,8 @@ class RevisionListenerTest extends TestCase
     private $em;
     private $factory;
     private $entity;
-    private $revision;
     private $resolver;
+    private $logger;
 
     public function setUp(): void
     {
@@ -34,7 +34,6 @@ class RevisionListenerTest extends TestCase
         $this->factory  = $this->createMock(RevisionFactoryInterface::class);
         $this->resolver = $this->createMock(RevisionResolverInterface::class);
         $this->entity   = $this->createMock(RevisionableInterface::class);
-        $this->revision = $this->createMock(RevisionInterface::class);
         $this->logger   = $this->createMock(LoggerInterface::class);
     }
 
@@ -80,7 +79,7 @@ class RevisionListenerTest extends TestCase
         $this->resolver
             ->expects($this->once())
             ->method('getRevisionAnnotation')
-            ->willReturn(new Revision());
+            ->willReturn(new RevisionAnnotation());
 
         $this->resolver
             ->expects($this->once())
@@ -101,7 +100,7 @@ class RevisionListenerTest extends TestCase
         $this->resolver
             ->expects($this->exactly(2))
             ->method('getRevisionAnnotation')
-            ->willReturn(new Revision());
+            ->willReturn(new RevisionAnnotation());
 
         $this->resolver
             ->expects($this->exactly(2))
@@ -121,9 +120,9 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoRevision(): void
+    public function testOnEntityChangedNoRevisionPresentOnFlush(): void
     {
-        $history = new Revision();
+        $history = new RevisionAnnotation();
 
         $this->resolver
             ->expects($this->once())
@@ -153,11 +152,93 @@ class RevisionListenerTest extends TestCase
         $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
         $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
 
-        $history = new Revision();
+        $history = new RevisionAnnotation();
         $this->resolver
             ->expects($this->any())
             ->method('getRevisionAnnotation')
             ->willReturn($history);
+
+        $this->resolver
+            ->expects($this->any())
+            ->method('getRevisionableFields')
+            ->willReturn(['something']);
+
+        $this->factory
+            ->expects($this->exactly(2))
+            ->method('createRevision')
+            ->willReturnOnConsecutiveCalls($r1, $r2);
+
+        $this->em
+            ->expects($this->any())
+            ->method('persist')
+            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)]);
+
+        $this->entity
+            ->expects($this->exactly(3))
+            ->method('setRevision')
+            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)], [$this->identicalTo($r2)]);
+
+        $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
+        $doctrine_event = $this
+            ->getMockBuilder('Doctrine\ORM\Event\PostFlushEventArgs')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $listener = new RevisionListener($this->resolver, $this->factory);
+        $listener->entityChanged($event);
+        $listener->postFlush($doctrine_event);
+        $listener->entityChanged($event);
+        $listener->entityChanged($event);
+    }
+
+    public function testOnEntityChangedInterfaceOnlyNoAnnotationNoAttribute(): void
+    {
+        $this->resolver
+            ->expects($this->any())
+            ->method('getRevisionAnnotation')
+            ->willReturn(null);
+
+        $this->resolver
+            ->expects($this->never())
+            ->method('getRevisionableFields');
+
+        $this->factory
+            ->expects($this->never())
+            ->method('createRevision');
+
+        $this->em
+            ->expects($this->never())
+            ->method('persist');
+
+        $this->entity
+            ->expects($this->never())
+            ->method('setRevision');
+
+        $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
+        $doctrine_event = $this
+            ->getMockBuilder('Doctrine\ORM\Event\PostFlushEventArgs')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $listener = new RevisionListener($this->resolver, $this->factory);
+        $listener->entityChanged($event);
+        $listener->postFlush($doctrine_event);
+    }
+
+    public function testOnEntityChangedAttribute(): void
+    {
+        $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
+        $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
+
+        $this->resolver
+            ->expects($this->any())
+            ->method('getRevisionAnnotation')
+            ->willReturn(null);
+
+        $this->resolver
+            ->expects($this->once())
+            ->method('getRevisionAttribute')
+            ->willReturn(new Revision());
 
         $this->resolver
             ->expects($this->any())
