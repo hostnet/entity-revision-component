@@ -153,15 +153,21 @@ class RevisionListenerTest extends TestCase
             ->method('createRevision')
             ->willReturnOnConsecutiveCalls($r1, $r2);
 
+        $persisted = [];
         $this->em
-            ->expects($this->any())
+            ->expects($this->exactly(3))
             ->method('persist')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)]);
+            ->willReturnCallback(function ($revision) use (&$persisted): void {
+                $persisted[] = $revision;
+            });
 
+        $set_revisions = [];
         $this->entity
             ->expects($this->exactly(3))
             ->method('setRevision')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)], [$this->identicalTo($r2)]);
+            ->willReturnCallback(function ($revision) use (&$set_revisions): void {
+                $set_revisions[] = $revision;
+            });
 
         $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
         $doctrine_event = $this
@@ -174,5 +180,8 @@ class RevisionListenerTest extends TestCase
         $listener->postFlush($doctrine_event);
         $listener->entityChanged($event);
         $listener->entityChanged($event);
+
+        self::assertSame([$r1, $r2, $r2], $persisted);
+        self::assertSame([$r1, $r2, $r2], $set_revisions);
     }
 }
