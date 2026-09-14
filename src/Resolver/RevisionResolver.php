@@ -16,14 +16,13 @@ class RevisionResolver implements RevisionResolverInterface
     {
     }
 
+    #[\Override]
     public function getRevisionAttribute(EntityManagerInterface $em, object $entity): ?Revision
     {
         return $this->provider->getAttributeFromEntity(Revision::class, $em, $entity);
     }
 
-    /**
-     * @see \Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface::getRevisionableFields()
-     */
+    #[\Override]
     public function getRevisionableFields(EntityManagerInterface $em, object $entity): array
     {
         $metadata = $em->getClassMetadata($entity::class);
