@@ -14,7 +14,7 @@ UPGRADE FROM 1.x to 2.0
 - Added return type hints to `RevisionableInterface`, `RevisionInterface` and
   `RevisionFactoryInterface`. Any implementation of these interfaces must add
   matching return types:
-  - `RevisionableInterface::setRevision()`: `void`
+  - `RevisionableInterface::setRevision()`: `static` (now fluent, must `return $this;`)
   - `RevisionableInterface::getRevision()`: `RevisionInterface`
   - `RevisionInterface::getUser()`: `string`
   - `RevisionInterface::getCreatedAt()`: `\DateTimeInterface`

@@ -33,7 +33,7 @@ Installing is pretty easy, this package is available on [packagist](https://pack
 
 ```javascript
     "require" : {
-        "hostnet/entity-revision-component" : "1.*"
+        "hostnet/entity-revision-component" : "2.*"
     }
 
 ```
@@ -152,6 +152,7 @@ All we have to do now is put the `#[Revision]` attribute and RevisionableInterfa
 use Doctrine\ORM\Mapping as ORM;
 use Hostnet\Component\EntityRevision\Attributes\Revision as RevisionAttribute;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
+use Hostnet\Component\EntityRevision\RevisionInterface;
 
 #[ORM\Entity]
 #[RevisionAttribute]
@@ -162,14 +163,16 @@ class MyEntity implements RevisionableInterface
      */
     #[ORM\ManyToOne(targetEntity: Revision::class)]
     #[ORM\JoinColumn(name: 'revision_id', referencedColumnName: 'id')]
-    private $revision;
+    private ?RevisionInterface $revision = null;
 
-    public function setRevision(RevisionInterface $revision)
+    public function setRevision(RevisionInterface $revision): static
     {
         $this->revision = $revision;
+
+        return $this;
     }
-    
-    public function getRevision()
+
+    public function getRevision(): RevisionInterface
     {
         return $this->revision;
     }

@@ -165,9 +165,11 @@ class RevisionListenerTest extends TestCase
         $this->entity
             ->expects($this->exactly(3))
             ->method('setRevision')
-            ->willReturnCallback(function ($revision) use (&$set_revisions): void {
+            ->with($this->callback(function ($revision) use (&$set_revisions): bool {
                 $set_revisions[] = $revision;
-            });
+
+                return true;
+            }));
 
         $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
         $doctrine_event = $this

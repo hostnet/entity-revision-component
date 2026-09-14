@@ -11,7 +11,7 @@ interface RevisionableInterface
     /**
      * Set the current revision
      */
-    public function setRevision(RevisionInterface $revision): void;
+    public function setRevision(RevisionInterface $revision): static;
 
     /**
      * Return the current revision
