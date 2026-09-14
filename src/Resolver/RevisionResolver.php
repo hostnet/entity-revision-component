@@ -16,7 +16,7 @@ class RevisionResolver implements RevisionResolverInterface
     {
     }
 
-    public function getRevisionAttribute(EntityManagerInterface $em, $entity): ?Revision
+    public function getRevisionAttribute(EntityManagerInterface $em, object $entity): ?Revision
     {
         return $this->provider->getAttributeFromEntity(Revision::class, $em, $entity);
     }
@@ -24,9 +24,9 @@ class RevisionResolver implements RevisionResolverInterface
     /**
      * @see \Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface::getRevisionableFields()
      */
-    public function getRevisionableFields(EntityManagerInterface $em, $entity): array
+    public function getRevisionableFields(EntityManagerInterface $em, object $entity): array
     {
-        $metadata = $em->getClassMetadata(get_class($entity));
+        $metadata = $em->getClassMetadata($entity::class);
         return array_merge($metadata->getFieldNames(), $metadata->getAssociationNames());
     }
 }

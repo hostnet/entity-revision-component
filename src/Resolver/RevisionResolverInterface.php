@@ -16,10 +16,10 @@ interface RevisionResolverInterface
      *
      * @return string[]
      */
-    public function getRevisionableFields(EntityManagerInterface $em, $entity): array;
+    public function getRevisionableFields(EntityManagerInterface $em, object $entity): array;
 
     /**
      * Return the revision attribute or null
      */
-    public function getRevisionAttribute(EntityManagerInterface $em, $entity): ?Revision;
+    public function getRevisionAttribute(EntityManagerInterface $em, object $entity): ?Revision;
 }

@@ -6,13 +6,12 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityRevision\Factory;
 
+use Hostnet\Component\EntityRevision\RevisionInterface;
+
 interface RevisionFactoryInterface
 {
     /**
      * Create a revision
-     *
-     * @param \DateTime $created_at
-     * @return \Hostnet\Component\EntityRevision\RevisionInterface
      */
-    public function createRevision(\DateTime $created_at);
+    public function createRevision(\DateTime $created_at): RevisionInterface;
 }

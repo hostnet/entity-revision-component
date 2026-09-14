@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityTracker\Provider\EntityMetadataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,22 +18,14 @@ use PHPUnit\Framework\TestCase;
  */
 class RevisionResolverTest extends TestCase
 {
-    private $provider;
-    private $resolver;
-    private $em;
+    private EntityMetadataProvider&MockObject $provider;
+    private EntityManagerInterface&MockObject $em;
+    private RevisionResolver $resolver;
 
     public function setUp(): void
     {
-        $this->provider = $this
-            ->getMockBuilder(EntityMetadataProvider::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->em = $this
-            ->getMockBuilder(EntityManagerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $this->provider = $this->createMock(EntityMetadataProvider::class);
+        $this->em       = $this->createMock(EntityManagerInterface::class);
         $this->resolver = new RevisionResolver($this->provider);
     }
 
@@ -46,7 +39,7 @@ class RevisionResolverTest extends TestCase
         $this->em
             ->expects($this->once())
             ->method('getClassMetadata')
-            ->with(get_class($entity))
+            ->with($entity::class)
             ->willReturn($metadata);
 
         $this->assertEquals(['id', 'test'], $this->resolver->getRevisionableFields($this->em, $entity));
