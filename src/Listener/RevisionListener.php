@@ -126,10 +126,6 @@ class RevisionListener
             return $this->save($cached_item, true);
         }
 
-        if (null !== $this->resolver->getRevisionAnnotation($em, $entity)) {
-            return $this->save($cached_item, true);
-        }
-
         return $this->save($cached_item, false);
     }
 
