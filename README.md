@@ -119,23 +119,23 @@ use Hostnet\Component\EntityRevision\RevisionInterface;
 class Revision implements RevisionInterface
 {
     #[ORM\...]
-    private $author;
+    private ?string $author;
 
     #[ORM\...]
-    private $created_at;
+    private \DateTimeInterface $created_at;
 
-    public function __construct($author, \DateTime $created_at)
+    public function __construct(?string $author, \DateTimeInterface $created_at)
     {
         $this->author     = $author;
         $this->created_at = $created_at;
     }
-    
-    public function getUser()
-    { 
+
+    public function getUser(): ?string
+    {
         return $this->author;
     }
 
-    public function getCreatedAt()
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->created_at;
     }
@@ -188,17 +188,15 @@ The factory is responsible for providing a revision Entity. You're free to fill 
 namespace Acme\Bundle\AcmeBundle;
 
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
+use Hostnet\Component\EntityRevision\RevisionInterface;
 
 class AcmeRevisionFactory implements RevisionFactoryInterface
 {
-    private $author;
-    
-    public function __construct($author)
+    public function __construct(private string $author)
     {
-        $this->author = $author;
     }
 
-    public function createRevision(\DateTime $created_at)
+    public function createRevision(\DateTime $created_at): RevisionInterface
     {
         return new Revision($this->author, $created_at);
     }

@@ -9,9 +9,9 @@ namespace Hostnet\Component\EntityRevision;
 interface RevisionInterface
 {
     /**
-     * Return the user that created the revision.
+     * Return the user that created the revision, or null if there is none.
      */
-    public function getUser(): string;
+    public function getUser(): ?string;
 
     /**
      * Return the date on which the revision was created.
