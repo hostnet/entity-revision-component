@@ -16,7 +16,7 @@ UPGRADE FROM 1.x to 2.0
   matching return types:
   - `RevisionableInterface::setRevision()`: `static` (now fluent, must `return $this;`)
   - `RevisionableInterface::getRevision()`: `RevisionInterface`
-  - `RevisionInterface::getUser()`: `string`
+  - `RevisionInterface::getUser()`: `?string`
   - `RevisionInterface::getCreatedAt()`: `\DateTimeInterface`
   - `RevisionFactoryInterface::createRevision()`: `RevisionInterface` (no longer
     nullable)
