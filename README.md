@@ -172,7 +172,7 @@ class MyEntity implements RevisionableInterface
         return $this;
     }
 
-    public function getRevision(): RevisionInterface
+    public function getRevision(): ?RevisionInterface
     {
         return $this->revision;
     }
