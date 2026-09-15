@@ -7,13 +7,12 @@ declare(strict_types=1);
 namespace Hostnet\Component\EntityRevision\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\PreFlushEventArgs;
 use Hostnet\Component\EntityRevision\Attributes\Revision;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
-use Hostnet\Component\EntityRevision\Revision as RevisionAnnotation;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
 use Hostnet\Component\EntityTracker\Event\EntityChangedEvent;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -22,11 +21,11 @@ use Psr\Log\LoggerInterface;
  */
 class RevisionListenerTest extends TestCase
 {
-    private $em;
-    private $factory;
-    private $entity;
-    private $resolver;
-    private $logger;
+    private EntityManagerInterface&MockObject $em;
+    private RevisionFactoryInterface&MockObject $factory;
+    private RevisionableInterface&MockObject $entity;
+    private RevisionResolverInterface&MockObject $resolver;
+    private LoggerInterface&MockObject $logger;
 
     public function setUp(): void
     {
@@ -35,21 +34,6 @@ class RevisionListenerTest extends TestCase
         $this->resolver = $this->createMock(RevisionResolverInterface::class);
         $this->entity   = $this->createMock(RevisionableInterface::class);
         $this->logger   = $this->createMock(LoggerInterface::class);
-    }
-
-    public function testPreFlush(): void
-    {
-        $this->factory
-            ->expects($this->once())
-            ->method('createRevision');
-
-        $doctrine_event = $this
-            ->getMockBuilder(PreFlushEventArgs::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
-        $listener->preFlush($doctrine_event);
     }
 
     public function testOnEntityChangedNoInterface(): void
@@ -64,7 +48,7 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoAnnotation(): void
+    public function testOnEntityChangedNoAttribute(): void
     {
         $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, []);
         $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
@@ -78,8 +62,8 @@ class RevisionListenerTest extends TestCase
     {
         $this->resolver
             ->expects($this->once())
-            ->method('getRevisionAnnotation')
-            ->willReturn(new RevisionAnnotation());
+            ->method('getRevisionAttribute')
+            ->willReturn(new Revision());
 
         $this->resolver
             ->expects($this->once())
@@ -99,8 +83,8 @@ class RevisionListenerTest extends TestCase
     {
         $this->resolver
             ->expects($this->exactly(2))
-            ->method('getRevisionAnnotation')
-            ->willReturn(new RevisionAnnotation());
+            ->method('getRevisionAttribute')
+            ->willReturn(new Revision());
 
         $this->resolver
             ->expects($this->exactly(2))
@@ -120,84 +104,8 @@ class RevisionListenerTest extends TestCase
         $listener->entityChanged($event);
     }
 
-    public function testOnEntityChangedNoRevisionPresentOnFlush(): void
+    public function testOnEntityChangedInterfaceOnlyNoAttribute(): void
     {
-        $history = new RevisionAnnotation();
-
-        $this->resolver
-            ->expects($this->once())
-            ->method('getRevisionAnnotation')
-            ->willReturn($history);
-
-        $this->resolver
-            ->expects($this->once())
-            ->method('getRevisionableFields')
-            ->willReturn(['something']);
-
-        $this->factory
-            ->expects($this->once())
-            ->method('createRevision')
-            ->willReturn(null);
-
-        $event    = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
-        $listener = new RevisionListener($this->resolver, $this->factory, $this->logger);
-
-        $this->expectException(\RuntimeException::class);
-
-        $listener->entityChanged($event);
-    }
-
-    public function testOnEntityChanged(): void
-    {
-        $r1 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
-        $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
-
-        $history = new RevisionAnnotation();
-        $this->resolver
-            ->expects($this->any())
-            ->method('getRevisionAnnotation')
-            ->willReturn($history);
-
-        $this->resolver
-            ->expects($this->any())
-            ->method('getRevisionableFields')
-            ->willReturn(['something']);
-
-        $this->factory
-            ->expects($this->exactly(2))
-            ->method('createRevision')
-            ->willReturnOnConsecutiveCalls($r1, $r2);
-
-        $this->em
-            ->expects($this->any())
-            ->method('persist')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)]);
-
-        $this->entity
-            ->expects($this->exactly(3))
-            ->method('setRevision')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)], [$this->identicalTo($r2)]);
-
-        $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
-        $doctrine_event = $this
-            ->getMockBuilder('Doctrine\ORM\Event\PostFlushEventArgs')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $listener = new RevisionListener($this->resolver, $this->factory);
-        $listener->entityChanged($event);
-        $listener->postFlush($doctrine_event);
-        $listener->entityChanged($event);
-        $listener->entityChanged($event);
-    }
-
-    public function testOnEntityChangedInterfaceOnlyNoAnnotationNoAttribute(): void
-    {
-        $this->resolver
-            ->expects($this->any())
-            ->method('getRevisionAnnotation')
-            ->willReturn(null);
-
         $this->resolver
             ->expects($this->never())
             ->method('getRevisionableFields');
@@ -231,11 +139,6 @@ class RevisionListenerTest extends TestCase
         $r2 = $this->createMock('Hostnet\Component\EntityRevision\RevisionInterface');
 
         $this->resolver
-            ->expects($this->any())
-            ->method('getRevisionAnnotation')
-            ->willReturn(null);
-
-        $this->resolver
             ->expects($this->once())
             ->method('getRevisionAttribute')
             ->willReturn(new Revision());
@@ -250,15 +153,23 @@ class RevisionListenerTest extends TestCase
             ->method('createRevision')
             ->willReturnOnConsecutiveCalls($r1, $r2);
 
+        $persisted = [];
         $this->em
-            ->expects($this->any())
+            ->expects($this->exactly(3))
             ->method('persist')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)]);
+            ->willReturnCallback(function ($revision) use (&$persisted): void {
+                $persisted[] = $revision;
+            });
 
+        $set_revisions = [];
         $this->entity
             ->expects($this->exactly(3))
             ->method('setRevision')
-            ->withConsecutive([$this->identicalTo($r1)], [$this->identicalTo($r2)], [$this->identicalTo($r2)]);
+            ->with($this->callback(function ($revision) use (&$set_revisions): bool {
+                $set_revisions[] = $revision;
+
+                return true;
+            }));
 
         $event          = new EntityChangedEvent($this->em, $this->entity, $this->entity, ['something']);
         $doctrine_event = $this
@@ -271,5 +182,8 @@ class RevisionListenerTest extends TestCase
         $listener->postFlush($doctrine_event);
         $listener->entityChanged($event);
         $listener->entityChanged($event);
+
+        self::assertSame([$r1, $r2, $r2], $persisted);
+        self::assertSame([$r1, $r2, $r2], $set_revisions);
     }
 }

@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityRevision\Listener;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
-use Doctrine\ORM\Event\PreFlushEventArgs;
 use Hostnet\Component\EntityRevision\Factory\RevisionFactoryInterface;
 use Hostnet\Component\EntityRevision\Resolver\RevisionResolverInterface;
 use Hostnet\Component\EntityRevision\RevisionableInterface;
@@ -26,32 +26,16 @@ class RevisionListener
     public function __construct(
         private RevisionResolverInterface $resolver,
         private RevisionFactoryInterface $factory,
-        private ?LoggerInterface $logger = new NullLogger(),
-        private ?CacheItemPoolInterface $is_revision_cache = new ArrayAdapter()
+        private LoggerInterface $logger = new NullLogger(),
+        private CacheItemPoolInterface $is_revision_cache = new ArrayAdapter()
     ) {
-    }
-
-    /**
-     * Event is used to create a new revision
-     *
-     * Used to group all entities to the same revision
-     * in the same flush if they use @Revision
-     *
-     * @deprecated functionality was moved to entityChanged and postFlush, will be removed when removing
-     *             doctrine/annotations.
-     * @param PreFlushEventArgs $event
-     */
-    public function preFlush(PreFlushEventArgs $event): void
-    {
-        trigger_error(__METHOD__ . ' is deprecated, please remove it from your event listener.', E_USER_DEPRECATED);
-        $this->revision = $this->factory->createRevision(new \DateTime());
     }
 
     /**
      * Event is used to remove the previous revision
      *
      * Used to group all entities to the same revision
-     * in the same flush if they use @Revision. This method
+     * in the same flush if they use #[Revision]. This method
      * can safely be overwritten if you prefer a Revision
      * per Request.
      */
@@ -60,9 +44,6 @@ class RevisionListener
         $this->revision = null;
     }
 
-    /**
-     * @param EntityChangedEvent $event
-     */
     public function entityChanged(EntityChangedEvent $event): void
     {
         if (!$this->shouldBePersisted($event)) {
@@ -73,22 +54,16 @@ class RevisionListener
             $this->revision = $this->factory->createRevision(new \DateTime());
         }
 
-        if (null === $this->revision) {
-            throw new \RuntimeException('No Revision set for current flush.');
-        }
-
         $event->getEntityManager()->persist($this->revision);
 
         $entity = $event->getCurrentEntity();
         $entity->setRevision($this->revision);
 
-        $this->logger->info(sprintf('Added revision for entity', ['entity' => get_class($entity)]));
+        $this->logger->info('Added revision for entity {entity}', ['entity' => $entity::class]);
     }
 
     /**
      * Checks if the current entity is eligable for a revision.
-     *
-     * @param EntityChangedEvent $event
      */
     private function shouldBePersisted(EntityChangedEvent $event): bool
     {
@@ -102,16 +77,16 @@ class RevisionListener
         $fields = $this->resolver->getRevisionableFields($em, $entity);
 
         // only create a revision if the mutated fields are tracked
-        if (count(array_intersect($fields, $event->getMutatedFields())) == 0) {
+        if (count(array_intersect($fields, $event->getMutatedFields())) === 0) {
             return false;
         }
 
         return true;
     }
 
-    private function isRevision($em, $entity): bool
+    private function isRevision(EntityManagerInterface $em, object $entity): bool
     {
-        $cache_key   = base64_encode('REVISION-' . get_class($entity));
+        $cache_key   = base64_encode('REVISION-' . $entity::class);
         $cached_item = $this->is_revision_cache->getItem($cache_key);
 
         if ($cached_item->isHit()) {
@@ -123,10 +98,6 @@ class RevisionListener
         }
 
         if (null !== $this->resolver->getRevisionAttribute($em, $entity)) {
-            return $this->save($cached_item, true);
-        }
-
-        if (null !== $this->resolver->getRevisionAnnotation($em, $entity)) {
             return $this->save($cached_item, true);
         }
 

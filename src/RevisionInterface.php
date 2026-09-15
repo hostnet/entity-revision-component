@@ -6,22 +6,15 @@ declare(strict_types=1);
 
 namespace Hostnet\Component\EntityRevision;
 
-/**
- * @TODO: add returntypehints on next BC break, when removing doctrine/annotation support
- */
 interface RevisionInterface
 {
     /**
      * Return the user that created the revision.
-     *
-     * @return string
      */
-    public function getUser();
+    public function getUser(): string;
 
     /**
      * Return the date on which the revision was created.
-     *
-     * @return \DateTime
      */
-    public function getCreatedAt();
+    public function getCreatedAt(): \DateTimeInterface;
 }
