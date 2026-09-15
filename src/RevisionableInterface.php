@@ -14,7 +14,7 @@ interface RevisionableInterface
     public function setRevision(RevisionInterface $revision): static;
 
     /**
-     * Return the current revision
+     * Return the current revision, or null if there is none.
      */
-    public function getRevision(): RevisionInterface;
+    public function getRevision(): ?RevisionInterface;
 }
